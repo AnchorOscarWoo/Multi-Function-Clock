@@ -1,0 +1,132 @@
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+
+import javax.swing.Box;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.Timer;
+
+public class DisplayAlarmClock extends JPanel{
+	private Object hour = 25;
+	private Object minute = 61;
+	private MP3Player MP3player = new MP3Player("殇心吉他优美闹钟.mp3");
+	private JButton jbtAddAlarm = new JButton("添加闹钟");
+	private JButton jbtAlarmSwitch = new JButton("开启闹钟");
+	private JLabel labelWord = new JLabel("响铃时间：",JLabel.CENTER);
+	private JLabel labelTime = new JLabel("未添加闹钟！",JLabel.CENTER);
+	private boolean isStart = false;
+	private boolean isDeal = false;
+	
+	public DisplayAlarmClock() {
+		
+		JPanel panel1 = new JPanel(new BorderLayout());
+		panel1.add(labelWord, BorderLayout.NORTH);
+		panel1.add(labelTime, BorderLayout.CENTER);
+		
+		jbtAlarmSwitch.setEnabled(false);
+		JPanel panel2 = new JPanel();
+		panel2.add(jbtAddAlarm);
+		panel2.add(jbtAlarmSwitch);
+		
+		setLayout(new BorderLayout());
+		add(panel2, BorderLayout.SOUTH);
+		add(panel1, BorderLayout.CENTER);
+		
+		jbtAddAlarm.addActionListener(new jbtAddAlarmListener());
+		jbtAlarmSwitch.addActionListener(new jbtAlarmSwitchListener()); 
+		
+		Timer timer = new Timer(1000, new TimerListener());
+		timer.start();
+	}
+	
+	private class jbtAddAlarmListener implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			Object[] hourList = new Object[24];
+			for(int i = 0; i < 24; i++)
+				hourList[i] = i;
+			 hour = JOptionPane.showInputDialog(null, "请设置闹钟的小时：", "闹钟",
+					JOptionPane.QUESTION_MESSAGE, null, hourList, null);
+			Object[] minuteList = new Object[60];
+			for(int i = 0; i < 60; i++)
+				minuteList[i] = i;
+		     minute = JOptionPane.showInputDialog(null, "请设置闹钟的分钟：", "闹钟",
+					JOptionPane.QUESTION_MESSAGE, null, minuteList, null);
+		     labelTime.setText(((int)hour<10?"0" + hour : hour) + ":" + 
+		                  ((int)minute<10?"0" + minute : minute) + "    未开启闹钟");
+		     jbtAlarmSwitch.setEnabled(true);
+		     jbtAddAlarm.setText("修改闹钟");
+		}
+	}
+	
+	private class jbtAlarmSwitchListener implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			//对“开启闹钟”按钮的处理
+			if(!isStart){
+				isDeal = true;
+				isStart = true;
+				jbtAlarmSwitch.setText("关闭闹钟");
+		    	labelTime.setText(((int)hour<10?"0" + hour : hour) + ":" + 
+		                ((int)minute<10?"0" + minute : minute) + "    已开启闹钟");
+			}
+	        //对“关闭闹钟”按钮的处理
+			else{
+				isDeal = false;
+				isStart = false;
+				jbtAlarmSwitch.setText("开启闹钟");
+		    	 labelTime.setText(((int)hour<10?"0" + hour : hour) + ":" + 
+		                  ((int)minute<10?"0" + minute : minute) + "    未开启闹钟");
+			}
+		}
+	}
+	
+	private class TimerListener implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			//只有开启闹钟后闹钟的作用才能生效
+			if(isDeal){			
+				Calendar calendar = new GregorianCalendar();
+//				labelRealTime.setText(calendar.get(Calendar.HOUR_OF_DAY) + ":" + 
+//						calendar.get(Calendar.MINUTE) + "." + calendar.get(Calendar.SECOND));
+				if((int)hour == calendar.get(Calendar.HOUR_OF_DAY) && 
+						(int)minute == calendar.get(Calendar.MINUTE)){
+					MusicThread musicThread = new MusicThread();
+					musicThread.start();
+					JOptionPane.showMessageDialog(null, "定时结束！","闹钟提醒",JOptionPane.INFORMATION_MESSAGE);
+					musicThread.stop();
+					isDeal = false;
+					isStart = false;
+					jbtAlarmSwitch.setText("开启闹钟");
+			    	 labelTime.setText(((int)hour<10?"0" + hour : hour) + ":" + 
+			                  ((int)minute<10?"0" + minute : minute) + "    未开启闹钟");
+			    }
+			}
+		}
+	}
+	
+    private class MusicThread extends Thread {
+    	
+    	public MusicThread() {
+    		
+    	}
+    	
+    	public void run(){
+    		while(true){ 	
+    				MP3player.play();
+    		}
+    	} 	
+    }
+}
